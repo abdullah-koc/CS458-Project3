@@ -66,8 +66,10 @@
         }).addTo(mapp);
         //calculate the distance to the north pole
         const distance = findDistanceToNorthPole(lat, lng);
-        //set the distance to the north pole
         distanceOut.innerHTML = `The distance to the north pole is: ${distance} km`;
+
+        // calculate the distance to moon
+        findDistanceToCoreOfMoon(lat, lng);
       });
 
       //listener for getlocation
@@ -101,30 +103,9 @@
                 position.coords.longitude
               );
 
-              distanceMoon.innerHTML = `The distance to the moon is: Calculating...`;
-
-              // send post request to api
-              const data = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-              };
-
-              fetch(api_link, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-              })
-                .then((res) => {
-                  return res.json();
-                })
-                .then((data) => {
-                  distanceMoon.innerHTML = `The distance to the moon is: ${data} km`;
-                });
-
-              //set the distance to the north pole
               distanceOut.innerHTML = `The distance to the north pole is: ${distance} km`;
+
+              findDistanceToCoreOfMoon(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
               alert(error.message);
@@ -156,6 +137,27 @@
         //   Math.abs(lng - 0) * Math.cos(lat * Math.PI / 180) * 111.32;
         // const d = Math.sqrt(diffLat * diffLat + diffLng * diffLng);
         // return d / 1000;
+      }
+
+      function findDistanceToCoreOfMoon(lat, lng) {
+        distanceMoon.innerHTML = `The distance to the moon is: Calculating...`;
+
+        const data = {
+          latitude: lat,
+          longitude: lng
+        };
+
+        fetch(api_link, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }).then((res) => {
+          return res.json();
+        }).then((data) => {
+          distanceMoon.innerHTML = `The distance to the moon is: ${data} km`;
+        });
       }
 
       $(document).ready(function() {
