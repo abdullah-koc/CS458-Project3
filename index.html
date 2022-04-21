@@ -24,6 +24,8 @@
     <div id="distancePole">The distance to the north pole is:</div>
     <div id="distanceMoon">The distance to the moon's core is:</div>
     <script>
+      api_link = "https://moon-distance-api.herokuapp.com";
+
       L.mapbox.accessToken =
         "pk.eyJ1IjoiYmlsYXRsYXN0ZWFtIiwiYSI6ImNrZW8waHZ6bjIzb24ycW5wYjU1a291MHQifQ.s_yFMzMLM99pKg-TFCxzTg";
 
@@ -37,6 +39,7 @@
       const latInput = document.getElementById("latitude");
       const lngInput = document.getElementById("longitude");
       const distanceOut = document.getElementById("distancePole");
+      const distanceMoon = document.getElementById("distanceMoon");
 
       //listener for submitlocation
       const submitLocation = document.getElementById("submitLocation");
@@ -97,6 +100,29 @@
                 position.coords.latitude,
                 position.coords.longitude
               );
+
+              distanceMoon.innerHTML = `The distance to the moon is: Calculating...`;
+
+              // send post request to api
+              const data = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              };
+
+              fetch(api_link, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              })
+                .then((res) => {
+                  return res.json();
+                })
+                .then((data) => {
+                  distanceMoon.innerHTML = `The distance to the moon is: ${data} km`;
+                });
+
               //set the distance to the north pole
               distanceOut.innerHTML = `The distance to the north pole is: ${distance} km`;
             },
@@ -131,8 +157,6 @@
         // const d = Math.sqrt(diffLat * diffLat + diffLng * diffLng);
         // return d / 1000;
       }
-
-      function findDistanceToCoreOfMoon(lat, lng) {}
 
       $(document).ready(function() {
         mapp.invalidateSize();
