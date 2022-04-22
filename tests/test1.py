@@ -19,7 +19,6 @@ driver.find_element(By.ID, "submitLocation").click()
 
 try:
     WebDriverWait(driver, 3).until(EC.alert_is_present(), "Waiting for alert timed out")
-    print(driver.switch_to.alert.text)
     # assert alert text
     assert(
         "Please enter a latitude and longitude" == driver.switch_to.alert.text

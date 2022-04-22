@@ -20,7 +20,6 @@ driver.implicitly_wait(2)
 
 try:
     WebDriverWait(driver, 3).until(EC.alert_is_present(), "Waiting for alert timed out")
-    print(driver.switch_to.alert.text)
     # assert alert text
     assert (
             "Please enter a valid latitude" == driver.switch_to.alert.text

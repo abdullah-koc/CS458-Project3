@@ -21,6 +21,9 @@ driver.implicitly_wait(2)
 
 try:
     WebDriverWait(driver, 3).until(EC.alert_is_present(), "Waiting for alert timed out")
+    assert (
+            "User denied Geolocation" == driver.switch_to.alert.text
+    )
     print("Test is passed")
 except Exception:
     print("Test is failed")
