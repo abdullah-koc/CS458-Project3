@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-# Test Case Description --> User logs in with correct e-mail and password
+# Test Case Description --> User doesn't enter latitude and longitude
 s = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches", ["enable-logging"])
@@ -19,6 +19,11 @@ driver.find_element(By.ID, "submitLocation").click()
 
 try:
     WebDriverWait(driver, 3).until(EC.alert_is_present(), "Waiting for alert timed out")
+    print(driver.switch_to.alert.text)
+    # assert alert text
+    assert(
+        "Please enter a latitude and longitude" == driver.switch_to.alert.text
+    )
     print("Test is passed")
 except Exception:
     print("Test is failed")

@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-# Test Case Description --> User logs in with correct e-mail and password
+# Test Case Description --> User denies geolocation and clicks get location button
 s = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches", ["enable-logging"])

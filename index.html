@@ -49,10 +49,21 @@
         const lat = parseFloat(latInput.value);
         const lng = parseFloat(lngInput.value);
 
-        if (!parseFloat(latInput.value) || !parseFloat(lngInput.value)) {
-          alert("Please enter a valid latitude and longitude");
+        if (isNaN(lat) || isNaN(lng)) {
+          alert("Please enter a latitude and longitude");
           return;
         }
+
+        if (lat > 90 || lat < -90) {
+          alert("Please enter a valid latitude");
+          return;
+        }
+
+        if (lng > 180 || lng < -180) {
+          alert("Please enter a valid longitude");
+          return;
+        }
+
         //if latitude and longitude are valid, set the marker position to the new location
         mapp.setView([lat, lng], 20);
 
@@ -140,7 +151,7 @@
       }
 
       function findDistanceToCoreOfMoon(lat, lng) {
-        distanceMoon.innerHTML = `The distance to the moon is: Calculating...`;
+        distanceMoon.innerHTML = `The distance to the moon's core is: Calculating...`;
 
         const data = {
           latitude: lat,
@@ -156,7 +167,7 @@
         }).then((res) => {
           return res.json();
         }).then((data) => {
-          distanceMoon.innerHTML = `The distance to the moon is: ${data} km`;
+          distanceMoon.innerHTML = `The distance to the moon's core is: ${data} km`;
         });
       }
 
