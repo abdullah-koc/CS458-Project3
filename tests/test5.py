@@ -23,6 +23,7 @@ driver.find_element(By.ID, "getLocation").click()
 try:
     initial_north_pole_text = "The distance to the north pole is:"
     initial_moon_text = "The distance to the moon's core is: Calculating..."
+    initial_country_text = "The country name is: Searching..."
 
     WebDriverWait(driver, 20).until(
         EC.text_to_be_present_in_element((By.ID, "distanceMoon"), "km")
@@ -33,6 +34,8 @@ try:
             != initial_north_pole_text
             and driver.find_element(By.ID, "distanceMoon").text
             != initial_moon_text
+            and driver.find_element(By.ID, "countryName").text
+            != initial_country_text
     )
     print("Test is passed")
 except Exception:
