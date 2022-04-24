@@ -32,8 +32,7 @@ try:
             != initial_north_pole_text
             and driver.find_element(By.ID, "distanceMoon").text
             != initial_moon_text
-            and driver.find_element(By.ID, "countryName").text
-            != initial_country_text
+            and "United States" in driver.find_element(By.ID, "countryName").text
     )
     print("Test is passed")
 except AssertionError:

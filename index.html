@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js"></script>
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <link rel="stylesheet" href="" />
+    <link rel="stylesheet" href="styles.css" />
     <link
       href="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css"
       rel="stylesheet"
@@ -25,17 +25,21 @@
     <div id="distanceMoon">The distance to the moon's core is:</div>
     <div id="countryName">Country name:</div>
     <script>
-      api_link = "https://moon-distance-api.herokuapp.com";
+      const api_link = "https://moon-distance-api.herokuapp.com";
       const accessToken = "pk.eyJ1IjoiYmlsYXRsYXN0ZWFtIiwiYSI6ImNrZW8waHZ6bjIzb24ycW5wYjU1a291MHQifQ.s_yFMzMLM99pKg-TFCxzTg";
+      const defaultLatitude = 39.92;
+      const defaultLongitude = 32.86;
+      const defaultZoomLevel = 12;
+      const zoomedInLevel = 20;
 
       L.mapbox.accessToken = accessToken;
 
-      var mapp = L.mapbox
+      var mapView = L.mapbox
         .map("map")
-        .setView([39.92, 32.86], 12)
+        .setView([defaultLatitude, defaultLongitude], defaultZoomLevel)
         .addLayer(L.mapbox.styleLayer("mapbox://styles/mapbox/streets-v11"));
 
-      var marker = L.marker([39.92, 32.86]).addTo(mapp);
+      var marker = L.marker([defaultLatitude, defaultLongitude]).addTo(mapView);
 
       const latInput = document.getElementById("latitude");
       const lngInput = document.getElementById("longitude");
@@ -47,6 +51,17 @@
       const submitLocation = document.getElementById("submitLocation");
       submitLocation.addEventListener("click", (e) => {
         e.preventDefault();
+        handleSubmitLocationButton();
+      });
+
+      //listener for getlocation
+      const getLocation = document.getElementById("getLocation");
+      getLocation.addEventListener("click", (e) => {
+        e.preventDefault();
+        handleGetLocationButton();
+      });
+
+      function handleSubmitLocationButton() {
         //if latitude ang longitude are not float, alert an error message and return
         const lat = parseFloat(latInput.value);
         const lng = parseFloat(lngInput.value);
@@ -67,69 +82,41 @@
         }
 
         //if latitude and longitude are valid, set the marker position to the new location
-        mapp.setView([lat, lng], 20);
+        mapView.setView([lat, lng], zoomedInLevel);
 
-        marker.remove();
-        marker = L.marker([lat, lng], {
-          icon: L.mapbox.marker.icon({
-            "marker-size": "medium",
-            "marker-symbol": "soccer",
-            "marker-color": "#7B1FA2",
-          }),
-        }).addTo(mapp);
-        //calculate the distance to the north pole
-        const distance = findDistanceToNorthPole(lat, lng);
-        distanceOut.innerHTML = `The distance to the north pole is: ${distance} km`;
+        addMarker(lat, lng);
+        performCalculations(lat, lng);
+      }
 
-        // calculate the distance to moon
-        findDistanceToCoreOfMoon(lat, lng);
-        getCountryName(lat, lng);
-      });
-
-      //listener for getlocation
-      const getLocation = document.getElementById("getLocation");
-      getLocation.addEventListener("click", (e) => {
-        e.preventDefault();
-        //get the current location
+      function handleGetLocationButton() {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (position) => {
-              latInput.setAttribute("value", position.coords.latitude);
-              lngInput.setAttribute("value", position.coords.longitude);
-              mapp.setView(
-                [position.coords.latitude, position.coords.longitude],
-                20
-              );
-              marker.remove();
-              marker = L.marker(
-                [position.coords.latitude, position.coords.longitude],
-                {
-                  icon: L.mapbox.marker.icon({
-                    "marker-size": "medium",
-                    "marker-symbol": "soccer",
-                    "marker-color": "#7B1FA2",
-                  }),
-                }
-              ).addTo(mapp);
-              //calculate the distance to the north pole
-              const distance = findDistanceToNorthPole(
-                position.coords.latitude,
-                position.coords.longitude
-              );
+                  (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
 
-              distanceOut.innerHTML = `The distance to the north pole is: ${distance} km`;
+                    latInput.setAttribute("value", latitude);
+                    lngInput.setAttribute("value", longitude);
 
-              findDistanceToCoreOfMoon(position.coords.latitude, position.coords.longitude);
-              getCountryName(position.coords.latitude, position.coords.longitude);
-            },
-            (error) => {
-              alert(error.message);
-            }
+                    mapView.setView([latitude, longitude], zoomedInLevel);
+
+                    addMarker(latitude, longitude);
+                    performCalculations(latitude, longitude);
+                  },
+                  (error) => {
+                    alert(error.message);
+                  }
           );
         } else {
           alert("Geolocation is not supported by this browser.");
         }
-      });
+      }
+
+      function performCalculations(lat, lng) {
+        findDistanceToNorthPole(lat, lng);
+        findDistanceToCoreOfMoon(lat, lng);
+        getCountryName(lat, lng);
+      }
 
       function findDistanceToNorthPole(lat, lng) {
         const R = 6371e3; // metres
@@ -145,13 +132,9 @@
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         const d = R * c; // in metres
-        return Math.round((d / 1000) * 100) / 100;
+        const result = Math.round((d / 1000) * 100) / 100;
 
-        // const diffLat = Math.abs(lat - 90) * 111.32;
-        // const diffLng =
-        //   Math.abs(lng - 0) * Math.cos(lat * Math.PI / 180) * 111.32;
-        // const d = Math.sqrt(diffLat * diffLat + diffLng * diffLng);
-        // return d / 1000;
+        distanceOut.innerHTML = `The distance to the north pole is: ${result} km`;
       }
 
       function findDistanceToCoreOfMoon(lat, lng) {
@@ -191,135 +174,20 @@
           });
       }
 
+      function addMarker(lat, lng){
+        marker.remove();
+        marker = L.marker([lat, lng], {
+          icon: L.mapbox.marker.icon({
+            "marker-size": "medium",
+            "marker-symbol": "soccer",
+            "marker-color": "#7B1FA2",
+          }),
+        }).addTo(mapView);
+      }
+
       $(document).ready(function() {
-        mapp.invalidateSize();
+        mapView.invalidateSize();
       })
     </script>
   </body>
-  <style>
-    #map {
-      width: 100%;
-      height: 100vh;
-      position: relative;
-    }
-    #latitude {
-      width: 300px;
-      height: 30px;
-      position: absolute;
-      top: 10px;
-      left: 50px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    #longitude {
-      width: 300px;
-      height: 30px;
-      position: absolute;
-      top: 60px;
-      left: 50px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    #getLocation {
-      width: 150px;
-      height: 30px;
-      position: absolute;
-      top: 135px;
-      left: 50px;
-      border-radius: 10px;
-      background-color: #a7246a;
-      color: #fff;
-      cursor: pointer;
-      border: 1px solid #a7246a;
-    }
-    #getLocation:hover {
-      background-color: #fff;
-      color: #a7246a;
-    }
-    #submitLocation {
-      width: 150px;
-      height: 30px;
-      position: absolute;
-      top: 100px;
-      left: 50px;
-      border-radius: 10px;
-      background-color: #8e24aa;
-      color: #fff;
-      cursor: pointer;
-      border: 1px solid #8e24aa;
-    }
-    /*hover on the button*/
-    #submitLocation:hover {
-      background-color: #fff;
-      color: #8e24aa;
-    }
-    #distancePole {
-      width: 400px;
-      height: 40px;
-      padding-left: 10px;
-      position: absolute;
-      display: flex;
-      align-items: center;
-      backdrop-filter: blur(8px);
-      color: black;
-      font-size: large;
-      font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-        sans-serif;
-      top: 180px;
-      left: 50px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    #distanceMoon {
-      width: 400px;
-      height: 40px;
-      padding-left: 10px;
-      position: absolute;
-      display: flex;
-      align-items: center;
-      backdrop-filter: blur(8px);
-      color: black;
-      font-size: large;
-      font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-        sans-serif;
-      top: 230px;
-      left: 50px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    #countryName {
-      width: 400px;
-      height: 40px;
-      padding-left: 10px;
-      position: absolute;
-      display: flex;
-      align-items: center;
-      backdrop-filter: blur(8px);
-      color: black;
-      font-size: large;
-      font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-      sans-serif;
-      top: 280px;
-      left: 50px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    @media screen and (max-width: 992px) {
-      #distanceMoon {
-        width: 250px;
-      }
-      #distancePole {
-        width: 250px;
-      }
-      #countryName {
-        width: 250px;
-      }
-    }
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
 </html>
