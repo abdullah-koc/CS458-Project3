@@ -61,6 +61,12 @@
         handleGetLocationButton();
       });
 
+      // onload get location and calculate distance to north pole
+      window.onload = () => {
+        handleGetLocationButton();
+      };
+
+
       function handleSubmitLocationButton() {
         //if latitude ang longitude are not float, alert an error message and return
         const lat = parseFloat(latInput.value);
