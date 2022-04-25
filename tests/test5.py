@@ -15,14 +15,11 @@ options.add_experimental_option(
     "prefs", {"profile.default_content_setting_values.geolocation": 1}
 )
 driver = webdriver.Chrome(options=options, service=s)
-driver.implicitly_wait(5)
 driver.maximize_window()
 driver.get("https://cs458pno3.netlify.app/")
 driver.find_element(By.ID, "getLocation").click()
 
 try:
-    initial_north_pole_text = "The distance to the north pole is:"
-    initial_moon_text = "The distance to the moon's core is: Calculating..."
     initial_country_text = "The country name is: Searching..."
 
     WebDriverWait(driver, 20).until(
@@ -30,10 +27,8 @@ try:
     )
 
     assert (
-            driver.find_element(By.ID, "distancePole").text
-            != initial_north_pole_text
-            and driver.find_element(By.ID, "distanceMoon").text
-            != initial_moon_text
+            "km" in driver.find_element(By.ID, "distancePole").text
+            and "km" in driver.find_element(By.ID, "distanceMoon").text
             and driver.find_element(By.ID, "countryName").text
             != initial_country_text
     )

@@ -13,11 +13,9 @@ options.add_experimental_option(
     "prefs", {"profile.default_content_setting_values.geolocation": 2}
 )
 driver = webdriver.Chrome(options=options, service=s)
-driver.implicitly_wait(5)
 driver.maximize_window()
 driver.get("https://cs458pno3.netlify.app/")
 driver.find_element(By.ID, "getLocation").click()
-driver.implicitly_wait(2)
 
 try:
     WebDriverWait(driver, 3).until(EC.alert_is_present(), "Waiting for alert timed out")
