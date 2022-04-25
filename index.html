@@ -8,10 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js"></script>
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link rel="stylesheet" href="styles.css" />
     <link
       href="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css"
       rel="stylesheet"
+    />
+    <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    rel="stylesheet"
     />
   </head>
   <body>
@@ -34,6 +39,7 @@
       const zoomedInLevel = 20;
 
       L.mapbox.accessToken = accessToken;
+      toastr.options.timeOut = 2000;
 
       var mapView = L.mapbox
         .map("map")
@@ -112,13 +118,50 @@
         }
       }
 
-      function performCalculations(lat, lng) {
+      async function performCalculations(lat, lng) {
+        let isMoonDistanceCalculated;
+        let isCountryNameFound;
+
         findDistanceToNorthPole(lat, lng);
-        findDistanceToCoreOfMoon(lat, lng);
-        getCountryName(lat, lng);
+
+        await findDistanceToCoreOfMoon(lat, lng).then((res) => {
+          return res.json();
+        }).then((data) => {
+          distanceMoon.innerHTML = `The distance to the moon's core is: ${data} km`;
+          isMoonDistanceCalculated = true;
+        }).catch((err) => {
+          isMoonDistanceCalculated = false;
+          distanceMoon.innerHTML = `The distance to the moon's core is: Unknown`;
+        });
+
+        await getCountryName(lat, lng).then((res) => {
+          return res.json();
+        }).then((data) => {
+          if (data && data.features[0] && data.features[0].text) {
+            countryName.innerHTML = `The country name is: ${data.features[0].text}`;
+          } else {
+            countryName.innerHTML = `The country name is: Unknown`;
+          }
+          isCountryNameFound = true;
+        }).catch((err) => {
+          isCountryNameFound = false;
+          countryName.innerHTML = `The country name is: Unknown`;
+        });
+
+        if (isMoonDistanceCalculated && isCountryNameFound) {
+          toastr.success("Successfully calculated!", "Success");
+        } else if (!isMoonDistanceCalculated) {
+          toastr.error("Failed to calculate the distance to the moon's core!", "Error");
+        } else if (!isCountryNameFound) {
+          toastr.error("Failed to find the country name!", "Error");
+        } else {
+          toastr.error("Something went wrong!", "Error");
+        }
       }
 
       function findDistanceToNorthPole(lat, lng) {
+        distanceOut.innerHTML = "The distance to the north pole is: Calculating...";
+
         let pi = Math.PI;
         let piover2 = Math.PI / 2;
         let r = 6371000;
@@ -136,7 +179,7 @@
         } km`;
       }
 
-      function findDistanceToCoreOfMoon(lat, lng) {
+      async function findDistanceToCoreOfMoon(lat, lng) {
         distanceMoon.innerHTML = `The distance to the moon's core is: Calculating...`;
 
         const data = {
@@ -144,37 +187,21 @@
           longitude: lng,
         };
 
-        fetch(api_link, {
+        return fetch(api_link, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((data) => {
-            distanceMoon.innerHTML = `The distance to the moon's core is: ${data} km`;
-          });
+        });
       }
 
       function getCountryName(lat, lng) {
         countryName.innerHTML = `The country name is: Searching...`;
 
-        fetch(
+        return fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}&types=country`
-        )
-          .then((res) => {
-            return res.json();
-          })
-          .then((data) => {
-            if (data && data.features[0] && data.features[0].text) {
-              countryName.innerHTML = `The country name is: ${data.features[0].text}`;
-            } else {
-              countryName.innerHTML = `The country name is: Unknown`;
-            }
-          });
+        );
       }
 
       function addMarker(lat, lng) {
