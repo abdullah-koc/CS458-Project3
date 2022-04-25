@@ -26,7 +26,8 @@
     <div id="countryName">Country name:</div>
     <script>
       const api_link = "https://moon-distance-api.herokuapp.com";
-      const accessToken = "pk.eyJ1IjoiYmlsYXRsYXN0ZWFtIiwiYSI6ImNrZW8waHZ6bjIzb24ycW5wYjU1a291MHQifQ.s_yFMzMLM99pKg-TFCxzTg";
+      const accessToken =
+        "pk.eyJ1IjoiYmlsYXRsYXN0ZWFtIiwiYSI6ImNrZW8waHZ6bjIzb24ycW5wYjU1a291MHQifQ.s_yFMzMLM99pKg-TFCxzTg";
       const defaultLatitude = 39.92;
       const defaultLongitude = 32.86;
       const defaultZoomLevel = 12;
@@ -61,6 +62,11 @@
         handleGetLocationButton();
       });
 
+<<<<<<< Updated upstream
+=======
+      // onload get location and calculate distance to north pole
+
+>>>>>>> Stashed changes
       function handleSubmitLocationButton() {
         //if latitude ang longitude are not float, alert an error message and return
         const lat = parseFloat(latInput.value);
@@ -91,21 +97,21 @@
       function handleGetLocationButton() {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
+            (position) => {
+              const latitude = position.coords.latitude;
+              const longitude = position.coords.longitude;
 
-                    latInput.setAttribute("value", latitude);
-                    lngInput.setAttribute("value", longitude);
+              latInput.setAttribute("value", latitude);
+              lngInput.setAttribute("value", longitude);
 
-                    mapView.setView([latitude, longitude], zoomedInLevel);
+              mapView.setView([latitude, longitude], zoomedInLevel);
 
-                    addMarker(latitude, longitude);
-                    performCalculations(latitude, longitude);
-                  },
-                  (error) => {
-                    alert(error.message);
-                  }
+              addMarker(latitude, longitude);
+              performCalculations(latitude, longitude);
+            },
+            (error) => {
+              alert(error.message);
+            }
           );
         } else {
           alert("Geolocation is not supported by this browser.");
@@ -119,22 +125,21 @@
       }
 
       function findDistanceToNorthPole(lat, lng) {
-        const R = 6371e3; // metres
-        const φ1 = (lat * Math.PI) / 180; // φ, λ in radians
-        const φ2 = Math.PI / 2;
+        let pi = Math.PI;
+        let piover2 = Math.PI / 2;
+        let r = 6371000;
+        var a =
+          Math.pow(Math.sin((piover2 - (lat * pi) / 180) / 2), 2) +
+          Math.cos((lat * pi) / 180) *
+            Math.cos(piover2) *
+            Math.pow(Math.sin(((lng - lat) * pi) / 180), 2);
+        var res = Math.round(
+          ((r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))) / 1000) * 100
+        );
 
-        const Δφ = (φ2 - φ1) / 2;
-        const Δλ = ((lng - lat) * Math.PI) / 180;
-
-        const a =
-          Math.sin(Δφ) * Math.sin(Δφ) +
-          Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ) * Math.sin(Δλ);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        const d = R * c; // in metres
-        const result = Math.round((d / 1000) * 100) / 100;
-
-        distanceOut.innerHTML = `The distance to the north pole is: ${result} km`;
+        distanceOut.innerHTML = `The distance to the north pole is: ${
+          res / 100 //convert to km
+        } km`;
       }
 
       function findDistanceToCoreOfMoon(lat, lng) {
@@ -142,7 +147,7 @@
 
         const data = {
           latitude: lat,
-          longitude: lng
+          longitude: lng,
         };
 
         fetch(api_link, {
@@ -151,17 +156,21 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
-        }).then((res) => {
-          return res.json();
-        }).then((data) => {
-          distanceMoon.innerHTML = `The distance to the moon's core is: ${data} km`;
-        });
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((data) => {
+            distanceMoon.innerHTML = `The distance to the moon's core is: ${data} km`;
+          });
       }
 
       function getCountryName(lat, lng) {
         countryName.innerHTML = `The country name is: Searching...`;
 
-        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}&types=country`)
+        fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}&types=country`
+        )
           .then((res) => {
             return res.json();
           })
@@ -174,7 +183,7 @@
           });
       }
 
-      function addMarker(lat, lng){
+      function addMarker(lat, lng) {
         marker.remove();
         marker = L.marker([lat, lng], {
           icon: L.mapbox.marker.icon({
@@ -185,9 +194,9 @@
         }).addTo(mapView);
       }
 
-      $(document).ready(function() {
+      $(document).ready(function () {
         mapView.invalidateSize();
-      })
+      });
     </script>
   </body>
 </html>
